@@ -1,1 +1,10 @@
-/Manifest*.toml
+# Resolve dependencies fresh from [sources] / the registry on each clone
+/Manifest.toml
+/test/Manifest.toml
+/docs/build/
+/docs/Manifest.toml
+*.jl.cov
+*.jl.*.cov
+*.jl.mem
+.DS_Store
+/.vscode/
