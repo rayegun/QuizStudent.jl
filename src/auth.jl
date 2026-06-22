@@ -9,6 +9,28 @@ const _RESUME_KEY = "resume_tokens"
 
 _room_id(url, room_key) = string(url, "|", room_key)
 
+# --- server URL --------------------------------------------------------------------
+# Remembered so `join_quiz(room_key=…, name=…)` can omit `url` after the first time.
+# `QUIZ_URL` is honored as a fallback.
+
+const _URL_KEY = "server_url"
+
+"The saved server URL (LocalPreferences.toml, else `QUIZ_URL`, else `\"\"`)."
+function server_url()
+    saved = @load_preference(_URL_KEY, "")
+    isempty(saved) ? get(ENV, "QUIZ_URL", "") : saved
+end
+
+"""
+    set_url!(url) -> String
+
+Persist the server URL so `join_quiz` can omit it on later sessions.
+"""
+set_url!(url::AbstractString) = (@set_preferences!(_URL_KEY => String(url)); String(url))
+
+"Forget the saved server URL."
+forget_url!() = (@delete_preferences!(_URL_KEY); nothing)
+
 "The saved resume token for `(url, room_key)`, or `nothing`."
 function remembered_resume_token(url::AbstractString, room_key::AbstractString)
     d = @load_preference(_RESUME_KEY, Dict{String,Any}())

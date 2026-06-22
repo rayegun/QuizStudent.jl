@@ -117,14 +117,18 @@ LocalPreferences.toml, so re-running `join_quiz` for the same room picks up your
 identity and already-answered state. Pass `resume_token` to override, or
 [`forget_resume_token!`](@ref) to rejoin fresh.
 """
-function join_quiz(; url::AbstractString, room_key::AbstractString, name::AbstractString,
+function join_quiz(; url=nothing, room_key::AbstractString, name::AbstractString,
                    resume_token=nothing, start_key=")", sandbox::Module=Main,
                    auto_enter=true)
-    tok = resume_token === nothing ? remembered_resume_token(url, room_key) : resume_token
-    c = connect(url, room_key; name=name, resume_token=tok, sandbox=sandbox)
+    u = url === nothing ? server_url() : String(url)
+    isempty(u) && error("no server URL — pass url=\"wss://…\" once (it will be remembered).")
+    tok = resume_token === nothing ? remembered_resume_token(u, room_key) : resume_token
+    c = connect(u, room_key; name=name, resume_token=tok, sandbox=sandbox)
     ACTIVE[] = c
-    # save on first use (idempotent on reconnect — the server returns the same token)
-    c.connected && !isempty(c.resume_token) && remember_resume_token!(url, room_key, c.resume_token)
+    if c.connected
+        url === nothing || set_url!(u)                          # save the URL on first use
+        isempty(c.resume_token) || remember_resume_token!(u, room_key, c.resume_token)
+    end
     try
         startmode(; start_key=start_key, auto_enter=auto_enter)
         printstyled("Press `$(start_key)` at the julia> prompt to answer "; color=:cyan)

@@ -8,3 +8,4 @@
 *.jl.mem
 .DS_Store
 /.vscode/
+/LocalPreferences.toml

@@ -20,7 +20,7 @@ using Preferences
 import REPL
 import REPL.TerminalMenus
 
-export join_quiz, question, choose, respond, status, leave, forget_resume_token!
+export join_quiz, question, choose, respond, status, leave, forget_resume_token!, set_url!, forget_url!
 export StudentClient, connect, submit, choose!, respond!, evaluate   # programmatic / testing API
 
 include("auth.jl")
