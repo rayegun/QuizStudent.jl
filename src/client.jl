@@ -34,6 +34,29 @@ end
 
 remaining_secs(c::StudentClient) = c.deadline_ms == 0 ? 0 : max(0, round(Int, (c.deadline_ms - time() * 1000) / 1000))
 
+# --- pretty REPL display (so a returned client isn't a wall of fields) -----
+
+function Base.show(io::IO, c::StudentClient)
+    room = isempty(c.room_key) ? "—" : c.room_key
+    print(io, "StudentClient(", repr(c.name), " @ ", room, ", ",
+          c.connected ? "connected" : "disconnected", ")")
+end
+
+function Base.show(io::IO, ::MIME"text/plain", c::StudentClient)
+    room = isempty(c.room_key) ? "(none)" : c.room_key
+    printstyled(io, "QuizStudent"; bold=true, color=:magenta)
+    print(io, " — ", repr(c.name), " in room ", room,
+          "  (", c.connected ? "connected" : "disconnected", ")")
+    if c.current === nothing
+        print(io, "\n  waiting for a question")
+    else
+        q = c.current
+        when = c.open ? "$(remaining_secs(c))s left" : "closed"
+        state = q.id in c.answered ? "answered" : (c.open ? "not answered yet" : "—")
+        print(io, "\n  question ", q.id, "  (", when, ") · ", state)
+    end
+end
+
 # --- inbound message handling --------------------------------------------
 
 function handle(c::StudentClient, m::Joined)
